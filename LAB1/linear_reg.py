@@ -8,7 +8,7 @@ from sklearn.linear_model import SGDRegressor
 
 
 def plot_function(X,Y,x_label,y_label,title):
-    plt.plot(X,Y)
+    plt.plot(X,Y,label=title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
@@ -25,6 +25,9 @@ if __name__ == "__main__":
     lr.fit(X, Y)
     sgdr.fit(X, Y)
 
-    plot_function(X, Y,"X values","Y values","Dependency Y on X")
+    plot_function(X, Y,"X values","Y values","Exact values")
+    plot_function(X, lr.predict(X),"X values","Predicted values","Prediction for linear regression")
+    plot_function(X, sgdr.predict(X),"X values","Predicted values","Prediction for SGDRegressor")
 
+    plt.legend()
     plt.show()
