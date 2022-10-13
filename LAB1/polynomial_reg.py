@@ -33,18 +33,25 @@ if __name__ == "__main__":
     X = 0.1 * np.linspace(-10,10,AMOUN).reshape(AMOUN,1)
     Y = 3*X**3  + 0.5*X**2 + X + 2 + np.random.rand(AMOUN,1)
 
-    poly = PolynomialFeatures(degree=3)
-    x_poly = poly.fit_transform(X)
-
-    lr = LinearRegression()
-    lr.fit(x_poly,Y)
-    y_lr = lr.predict(x_poly)
+    polies = []
+    lregs = []
+    y_preds = []
+    for deg in range(1,10):
+        poly = PolynomialFeatures(degree=deg)
+        x_poly = poly.fit_transform(X)
+        lr = LinearRegression()
+        lr.fit(x_poly,Y)
+        y_lr = lr.predict(x_poly)
+        lregs.append(lr)
+        y_preds.append(y_lr)
 
     print_results(lr,"LinearRegression",X,x_poly,Y,y_lr)
 
 #   -------------------------------------------------------------------------------
     plot_function(X, Y,"X values","Y values","Exact values")
-    plot_function(X, y_lr,"X values","Predicted values","Prediction for polynomial LINEAR regression")
+    for i,y in enumerate(y_preds):
+        plot_function(X, y,"X values","Predicted values", f"Prediction for polynomial of {i+1} degree")
+
 
     plt.legend()
     plt.show()

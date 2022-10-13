@@ -10,7 +10,7 @@ from sklearn.metrics import mean_squared_error
 
 
 def plot_function(X,Y,x_label,y_label,title):
-    plt.plot(X,Y,label=title)
+    plt.scatter(X,Y,label=title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
@@ -29,6 +29,8 @@ def print_results(model,model_name,X,Y,Y_pred):
 
 #   -------------------------------------------------------------------------------
 if __name__ == "__main__":
+
+    plt.style.use('ggplot')
 
     AMOUN = 500
     X = 0.4 * np.linspace(-3,3,AMOUN).reshape(AMOUN,1)
@@ -58,34 +60,17 @@ if __name__ == "__main__":
     hyperparam = []
     MSE = []
     MAE = []
-    for eps in np.arange(0.01,0.1,0.001):
-        sgdr_ = SGDRegressor(epsilon = eps)
+    for eps in np.arange(0.001,1,0.001):
+        sgdr_ = SGDRegressor(eta0 = eps)
         sgdr_.fit(X,Y)
         MSE.append(mean_squared_error(Y,sgdr_.predict(X)))
         MAE.append(mean_absolute_error(Y,sgdr_.predict(X)))
         hyperparam.append(eps)
-    # plt.plot(hyperparam,MAE,label="MAE")    
+    plt.plot(hyperparam,MAE,label="MAE")    
     plt.plot(hyperparam,MSE,label="MSE")    
-    plt.xlabel("epsilon")
+    plt.xlabel("eta0")
     plt.ylabel("Error")
-    plt.title("Epsilon parameterization")
+    plt.title("Eta0 parameterization")
     plt.grid(True)
-    plt.show()
-
-#   -------------------------------------------------------------------------------
-    hyperparam = []
-    MSE = []
-    MAE = []
-    for alpha in np.arange(0.000001,0.001,0.000001):
-        sgdr_ = SGDRegressor(alpha = alpha)
-        sgdr_.fit(X,Y)
-        MSE.append(mean_squared_error(Y,sgdr_.predict(X)))
-        MAE.append(mean_absolute_error(Y,sgdr_.predict(X)))
-        hyperparam.append(alpha)
-    # plt.plot(hyperparam,MAE,label="MAE")    
-    plt.plot(hyperparam,MSE,label="MSE")    
-    plt.xlabel("alpha")
-    plt.ylabel("Error")
-    plt.title("Aplha parameterization")
-    plt.grid(True)
+    plt.legend()
     plt.show()
