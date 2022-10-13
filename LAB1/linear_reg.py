@@ -1,4 +1,5 @@
 # Needed libraries
+from cProfile import label
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,15 +19,20 @@ def plot_function(X,Y,x_label,y_label,title):
 def print_results(model,model_name,X,Y,Y_pred):
     print(f"\n\n=============={model_name}==============")
     print(model.get_params())
-    print("Model score = ",model.score(X,Y))
-    print("Model coefficients = ",model.coef_)
-    print("mean absolute error = ",mean_absolute_error(Y,Y_pred))
-    print("mean squared error = ",mean_squared_error(Y,Y_pred))
+    print("Score = ",model.score(X,Y))
+    print("Coefficients = ",model.coef_)
+    print("Intercepts = ",model.intercept_)
+    print(f"Equation = {model.coef_[0]}*x + {model.intercept_[0]}")
+    print("Mean absolute error = ",mean_absolute_error(Y,Y_pred))
+    print("Mean squared error = ",mean_squared_error(Y,Y_pred))
 
 
+#   -------------------------------------------------------------------------------
 if __name__ == "__main__":
-    X = 0.4 * np.linspace(-3,3,500).reshape(500,1)
-    Y = 6 + 4*X + np.random.rand(500,1)
+
+    AMOUN = 500
+    X = 0.4 * np.linspace(-3,3,AMOUN).reshape(AMOUN,1)
+    Y = 6 + 4*X + np.random.rand(AMOUN,1)
 
     lr = LinearRegression()
     sgdr = SGDRegressor()
@@ -37,12 +43,49 @@ if __name__ == "__main__":
     Y_lr_predict = lr.predict(X)
     Y_sgdr_predict = sgdr.predict(X)
 
+    print_results(lr,"LinearRegression",X,Y,Y_lr_predict)
+    print_results(sgdr,"SGDRegressor",X,Y,Y_sgdr_predict)
+
+#   -------------------------------------------------------------------------------
     plot_function(X, Y,"X values","Y values","Exact values")
     plot_function(X, Y_lr_predict,"X values","Predicted values","Prediction for linear regression")
     plot_function(X, Y_sgdr_predict,"X values","Predicted values","Prediction for SGDRegressor")
 
-    print_results(lr,"LinearRegression",X,Y,Y_lr_predict)
-    print_results(sgdr,"SGDRegressor",X,Y,Y_sgdr_predict)
-
     plt.legend()
+    plt.show()
+
+#   -------------------------------------------------------------------------------
+    hyperparam = []
+    MSE = []
+    MAE = []
+    for eps in np.arange(0.01,0.1,0.001):
+        sgdr_ = SGDRegressor(epsilon = eps)
+        sgdr_.fit(X,Y)
+        MSE.append(mean_squared_error(Y,sgdr_.predict(X)))
+        MAE.append(mean_absolute_error(Y,sgdr_.predict(X)))
+        hyperparam.append(eps)
+    # plt.plot(hyperparam,MAE,label="MAE")    
+    plt.plot(hyperparam,MSE,label="MSE")    
+    plt.xlabel("epsilon")
+    plt.ylabel("Error")
+    plt.title("Epsilon parameterization")
+    plt.grid(True)
+    plt.show()
+
+#   -------------------------------------------------------------------------------
+    hyperparam = []
+    MSE = []
+    MAE = []
+    for alpha in np.arange(0.000001,0.001,0.000001):
+        sgdr_ = SGDRegressor(alpha = alpha)
+        sgdr_.fit(X,Y)
+        MSE.append(mean_squared_error(Y,sgdr_.predict(X)))
+        MAE.append(mean_absolute_error(Y,sgdr_.predict(X)))
+        hyperparam.append(alpha)
+    # plt.plot(hyperparam,MAE,label="MAE")    
+    plt.plot(hyperparam,MSE,label="MSE")    
+    plt.xlabel("alpha")
+    plt.ylabel("Error")
+    plt.title("Aplha parameterization")
+    plt.grid(True)
     plt.show()
