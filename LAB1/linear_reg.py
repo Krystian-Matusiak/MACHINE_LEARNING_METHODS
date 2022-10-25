@@ -1,16 +1,16 @@
 # Needed libraries
 from cProfile import label
-import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
-
+from sklearn.metrics import r2_score
+from mpl_toolkits.mplot3d import Axes3D
 
 def plot_function(X,Y,x_label,y_label,title):
-    plt.scatter(X,Y,label=title)
+    plt.scatter(X,Y,label=title, s=15)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
@@ -20,6 +20,7 @@ def print_results(model,model_name,X,Y,Y_pred):
     print(f"\n\n=============={model_name}==============")
     print(model.get_params())
     print("Score = ",model.score(X,Y))
+    print("r2_score = ",r2_score(Y,Y_pred))
     print("Coefficients = ",model.coef_)
     print("Intercepts = ",model.intercept_)
     print(f"Equation = {model.coef_[0]}*x + {model.intercept_[0]}")
@@ -57,20 +58,34 @@ if __name__ == "__main__":
     plt.show()
 
 #   -------------------------------------------------------------------------------
-    hyperparam = []
-    MSE = []
-    MAE = []
-    for eps in np.arange(0.001,1,0.001):
-        sgdr_ = SGDRegressor(eta0 = eps)
+    hyperparam_eta = []
+    Score = []
+    for eta in np.arange(0.001,1,0.001):
+        sgdr_ = SGDRegressor(eta0 = eta)
         sgdr_.fit(X,Y)
-        MSE.append(mean_squared_error(Y,sgdr_.predict(X)))
-        MAE.append(mean_absolute_error(Y,sgdr_.predict(X)))
-        hyperparam.append(eps)
-    plt.plot(hyperparam,MAE,label="MAE")    
-    plt.plot(hyperparam,MSE,label="MSE")    
+        Score.append(sgdr_.score(X,Y))
+        hyperparam_eta.append(eta)
+    plt.plot(hyperparam_eta,Score)    
     plt.xlabel("eta0")
     plt.ylabel("Error")
     plt.title("Eta0 parameterization")
     plt.grid(True)
     plt.legend()
     plt.show()
+
+#   -------------------------------------------------------------------------------
+    hyperparam_power = []
+    Score = []
+    for power in np.arange(0.001,1,0.001):
+        sgdr_ = SGDRegressor(eta0=0.01, power_t=power)
+        sgdr_.fit(X,Y)
+        Score.append(sgdr_.score(X,Y))
+        hyperparam_power.append(power)
+    plt.plot(hyperparam_power,Score)    
+    plt.xlabel("power_t")
+    plt.ylabel("Error")
+    plt.title("power_t parameterization")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
