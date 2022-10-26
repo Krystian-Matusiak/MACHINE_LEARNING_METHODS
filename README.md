@@ -2,8 +2,8 @@
 
 ## Laboratory 1 todo list
 
-- [ ] Code
-- [ ] LaTeX description
+- [x] Code
+- [x] LaTeX description
 
 ## Laboratory 2 todo list
 
