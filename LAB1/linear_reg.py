@@ -40,7 +40,8 @@ if __name__ == "__main__":
     # X_train = X_test
 
     Y_train = 6 + 4*X_train + np.random.randn(int(AMOUN/2),1)
-    Y_exact = 6 + 4*X_train
+    Y_exact = 6 + 4*X_test + np.random.randn(int(AMOUN/2),1)
+    # Y_exact = 6 + 4*X_train
 
     lr = LinearRegression()
     sgdr = SGDRegressor()
