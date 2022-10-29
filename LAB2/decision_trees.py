@@ -30,33 +30,36 @@ if __name__ == "__main__":
     df = read_df_from_csv('data.csv')
     print(df)
 
-
+    x_train = df.drop(['label'],axis="columns")
+    y_train = df['label']
 
     dec_tree = DecisionTreeClassifier()
-    dec_tree.fit(df.drop(['label'],axis="columns"),df['label'])
-    tree.plot_tree(dec_tree)
+    dec_tree.fit(df.drop(columns='label'),y_train)
+
+    y_pred = dec_tree.predict(x_train)
+    acc = accuracy_score(y_train,y_pred)
+    print(f"Accuracy score = {acc}")
+
+
+
+    # ------------------------------------------------------------------
+    # To plot data and its decision boundary
+    x_test = np.linspace(0.0, 1.0, 1000)
+    y_test = np.linspace(0.0, 1.0, 1000)
+    xx, yy = np.meshgrid(x_test, y_test)
+    y_mesh_predict = dec_tree.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
+    plt.imshow(y_mesh_predict, 
+        interpolation="nearest",
+           extent=(0, 1, 0, 1),
+        cmap="Wistia", origin="lower")
+    plt.scatter(df["X"], df["Y"], 
+        c=df["label"], cmap="viridis")
+    plt.xlabel("X")
+    plt.ylabel("Y")
+    plt.title("Data plot with decision bounary")
     plt.show()
 
-    y_pred = dec_tree.predict(df.drop(['label'],axis="columns"))
-    acc = accuracy_score(df['label'],y_pred)
-    print(f"Accuracy score = {acc}")
-    
-    # print(Z)
-    # plt.imshow(Z, 
-    #         interpolation="nearest",
-    #         extent=(0, 0.3, 0, 1),
-    #         cmap="Wistia", origin="lower")
-
-    # DecisionBoundaryDisplay.from_estimator(
-    #     dec_tree,
-    #     df.drop(['label'],axis="columns"),
-    #     cmap=plt.cm.RdYlBu,
-    #     response_method="predict",
-    # )
-    
-    labels = df.drop(['label'],axis="columns")
-    print("z = " , labels)
-    plt.contourf(df['X'], df['Y'], df.drop(['label'],axis="columns"), alpha=0.4)
-    plt.imshow(df.to_numpy())
-    plot_scatter_df(df)
+    # ------------------------------------------------------------------
+    # To plot the whole tree
+    tree.plot_tree(dec_tree)
     plt.show()
