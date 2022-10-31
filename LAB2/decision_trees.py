@@ -7,7 +7,6 @@ try:
     import matplotlib.pyplot as plt
     from sklearn.tree import DecisionTreeClassifier
     from sklearn import tree
-    from sklearn.inspection import DecisionBoundaryDisplay
     from sklearn.metrics import accuracy_score
     from sklearn.model_selection import GridSearchCV
 except:
