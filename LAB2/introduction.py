@@ -4,13 +4,15 @@ try:
     import time
     import pandas as pd
     import matplotlib.pyplot as plt
+    import os
 except:
     print("Something went wrong")
 
 
 
 def read_df_from_csv(file_name):
-    df = pd.read_csv('data.csv',header=None)
+    path = os.getcwd()+ "\\LAB2\\" + file_name
+    df = pd.read_csv(path, header=None)
     df.columns=['X','Y','label']
     return df
 
@@ -22,7 +24,9 @@ def plot_scatter_df(df):
     plt.show()
 
 if __name__ == "__main__":
+    #print(os.getcwd())
     plt.style.use('ggplot')
     df = read_df_from_csv('data.csv')
     print(df)
-    plot_scatter_df(df)    
+    plot_scatter_df(df)
+
