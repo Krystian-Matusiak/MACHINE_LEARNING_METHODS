@@ -8,13 +8,15 @@ try:
     from sklearn.metrics import accuracy_score
     from sklearn.model_selection import GridSearchCV
     from sklearn.svm import SVC
+    import os
 except:
     print("Something went wrong")
 
 
 
 def read_df_from_csv(file_name):
-    df = pd.read_csv('data.csv',header=None)
+    path = os.getcwd()+ "\\LAB2\\" + file_name
+    df = pd.read_csv(path, header=None)
     df.columns=['X','Y','label']
     return df
 
