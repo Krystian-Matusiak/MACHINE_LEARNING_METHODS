@@ -15,7 +15,7 @@ except:
 
 
 def read_df_from_csv(file_name):
-    path = os.getcwd()+ "\\LAB2\\" + file_name
+    path = os.getcwd()+ "/" + file_name
     df = pd.read_csv(path, header=None)
     df.columns=['X','Y','label']
     return df
