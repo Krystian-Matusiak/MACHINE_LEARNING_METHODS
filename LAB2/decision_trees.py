@@ -17,7 +17,7 @@ except:
 
 
 def read_df_from_csv(file_name):
-    path = os.getcwd() + "/" + file_name
+    path = os.getcwd() + "\\LAB2\\" + file_name
     df = pd.read_csv(path, header=None)
     df.columns=['X','Y','label']
     return df
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     y_pred = dec_tree.predict(x_train)
     acc_overfitted = accuracy_score(y_train,y_pred)
     print(f"Accuracy score for defaults = {acc_overfitted}")
-    print(f"Depth:{dec_tree.get_depth()} and leaves = {dec_tree.get_depth()}")
+    print(f"Depth:{dec_tree.get_depth()} and leaves = {dec_tree.get_n_leaves()}")
 
     # ------------------------------------------------------------------
     # To plot data and its decision boundary
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     best = grid.best_estimator_
 
     pred = best.predict(x_train)
-    print(f"The best parameters are {grid.best_params_} with a score of {accuracy_score(y_train,pred)}")
+    print(f"eloThe best parameters are {grid.best_params_} with a score of {accuracy_score(y_train,pred)}")
     grid_results = pd.concat([pd.DataFrame(grid.cv_results_["params"]),
                             pd.DataFrame(grid.cv_results_["mean_test_score"], 
                             columns=["ACC"])],
