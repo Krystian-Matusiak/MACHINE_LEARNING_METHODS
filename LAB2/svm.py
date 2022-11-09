@@ -26,7 +26,7 @@ def plot_scatter_df(df):
     plt.ylabel("Y")
     plt.title("Data from .csv file")
 
-def plot_decision_boundary(model, dataframe,y_train):
+def plot_decision_boundary(model, dataframe,y_train,title):
     x_test = np.linspace(0.0, 1.0, 1000)
     y_test = np.linspace(0.0, 1.0, 1000)
     xx, yy = np.meshgrid(x_test, y_test)
@@ -37,7 +37,7 @@ def plot_decision_boundary(model, dataframe,y_train):
         c=y_train, cmap="viridis")
     plt.xlabel("X")
     plt.ylabel("Y")
-    plt.title("Data plot with decision bounary")
+    plt.title(title)
     plt.show()
 
 if __name__ == "__main__":
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     acc_overfitted = accuracy_score(y_train,y_pred)
     print(f"Accuracy score for defaults = {acc_overfitted}")
 
-    plot_decision_boundary(svm, df, y_train)
+    plot_decision_boundary(svm, df, y_train,"Data plot with decision bounary")
 
 
     # ------------------------------------------------------------------
@@ -73,19 +73,9 @@ if __name__ == "__main__":
 
         # ------------------------------------------------------------------
         # Plot data and its decision boundary
-        if c==16:
-            x_test = np.linspace(0.0, 1.0, 1000)
-            y_test = np.linspace(0.0, 1.0, 1000)
-            xx, yy = np.meshgrid(x_test, y_test)
-            y_mesh_predict = svm.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-            plt.imshow(y_mesh_predict,extent=(0, 1, 0, 1),
-                cmap="Wistia", origin="lower")
-            plt.scatter(df["X"], df["Y"], 
-                c=y_train, cmap="viridis")
-            plt.xlabel("X")
-            plt.ylabel("Y")
-            plt.title(f"SVM for C={c}")
-            plt.show()
+
+        if c==15:
+            plot_decision_boundary(svm, df, y_train,f"SVM for C={c}")
 
     plt.plot(C,ACC)
     plt.xlabel("C")
@@ -97,13 +87,15 @@ if __name__ == "__main__":
     # Plot accuracy vs degree
     D = []
     ACC = []
-    for degree in np.arange(1,8,1):
+    for degree in np.arange(1,5,1):
+        print(degree)
         D.append(degree)
         svm = SVC(degree=degree, kernel = 'poly')
         svm.fit(x_train,y_train)
 
         y_pred = svm.predict(x_train)
         ACC.append(accuracy_score(y_train,y_pred))
+        # plot_decision_boundary(svm, df, y_train,f"SVM for degree={degree}")
 
 
         # ------------------------------------------------------------------
@@ -199,33 +191,14 @@ if __name__ == "__main__":
     plt.show()
 
 
+   # ------------------------------------------------------------------
+    # Use all best parameters
+    svm = SVC(C=16,kernel='rbf',degree=8)
+    svm.fit(x_train,y_train)
 
-    # ------------------------------------------------------------------
-    # Plot for GridSearchCV
-    C = np.arange(0.5,20,0.5)
-    kernel = ['sigmoid','poly', 'rbf','linear']
-    degree = range(1,6)
-    gamma = ['scale', 'auto'] 
-    param_grid = dict(C=C,kernel=kernel,degree=degree,gamma=gamma)
+    y_pred = svm.predict(x_train)
+    acc_overfitted = accuracy_score(y_train,y_pred)
+    print(f"Accuracy score for defaults = {acc_overfitted}")
 
-    svm = SVC()
-    grid = GridSearchCV(estimator=svm, param_grid=param_grid, scoring='accuracy', cv=6, verbose=4)
-    grid.fit(x_train,y_train)
-    best = grid.best_estimator_
+    plot_decision_boundary(svm, df, y_train,"Decision bounary for best parameters")
 
-    pred = best.predict(x_train)
-    print(f"Accuracy score for best = {accuracy_score(pred,y_pred)}")
-    print(f"The best parameters are {grid.best_params_} with a score of {grid.best_score_}")
-
-    x_test = np.linspace(0.0, 1.0, 1000)
-    y_test = np.linspace(0.0, 1.0, 1000)
-    xx, yy = np.meshgrid(x_test, y_test)
-    y_mesh_predict = best.predict(np.c_[xx.ravel(), yy.ravel()]).reshape(xx.shape)
-    plt.imshow(y_mesh_predict,extent=(0, 1, 0, 1),
-        cmap="Wistia", origin="lower")
-    plt.scatter(df["X"], df["Y"], 
-        c=y_train, cmap="viridis")
-    plt.xlabel("X")
-    plt.ylabel("Y")
-    plt.title(f"SVM for C={c}")
-    plt.show()
