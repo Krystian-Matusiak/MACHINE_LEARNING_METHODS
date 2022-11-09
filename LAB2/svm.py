@@ -15,7 +15,7 @@ except:
 
 
 def read_df_from_csv(file_name):
-    path = os.getcwd()+ "\\LAB2\\" + file_name
+    path = os.getcwd() + "/LAB2/" + file_name
     df = pd.read_csv(path, header=None)
     df.columns=['X','Y','label']
     return df
@@ -98,8 +98,6 @@ if __name__ == "__main__":
     D = []
     ACC = []
     for degree in np.arange(1,8,1):
-        print("trying for")
-        print(degree)
         D.append(degree)
         svm = SVC(degree=degree, kernel = 'poly')
         svm.fit(x_train,y_train)

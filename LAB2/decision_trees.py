@@ -17,7 +17,7 @@ except:
 
 
 def read_df_from_csv(file_name):
-    path = os.getcwd() + "\\LAB2\\" + file_name
+    path = os.getcwd() + "/LAB2/" + file_name
     df = pd.read_csv(path, header=None)
     df.columns=['X','Y','label']
     return df
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     best = grid.best_estimator_
 
     pred = best.predict(x_train)
-    print(f"eloThe best parameters are {grid.best_params_} with a score of {accuracy_score(y_train,pred)}")
+    print(f"The best parameters are {grid.best_params_} with a score of {accuracy_score(y_train,pred)}")
     grid_results = pd.concat([pd.DataFrame(grid.cv_results_["params"]),
                             pd.DataFrame(grid.cv_results_["mean_test_score"], 
                             columns=["ACC"])],
