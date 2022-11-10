@@ -4,8 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-def plot_function(X, Y_train, x_label, y_label, label):
-    plt.scatter(X, Y_train, label=label, s=15)
+def plot_function(X, Y_train, x_label, y_label, label,alpha=1.0):
+    plt.scatter(X, Y_train, label=label, s=15, alpha=alpha)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.grid(True)
@@ -29,8 +29,7 @@ if __name__ == "__main__":
     X = X - mean
 
     # Plot centered data
-    plot_function(X[:,0], X[:,1],"x-axis","y-axis","Given X data")
-    # plt.show()
+    plot_function(X[:,0], X[:,1],"x-axis","y-axis","Given X data",0.2)
 
     # Covariance matrix
     C = np.cov(X.T)
@@ -44,7 +43,7 @@ if __name__ == "__main__":
     # Plot data with eigenvectors
     plt.quiver(V[0,0], V[1,0], color="r", scale=5)
     plt.quiver(V[0,1], V[1,1], color="b", scale=5)
-    plt.show()
+    # plt.show()
 
     # U and Z variables
     index = D.argsort()[::-1]
@@ -63,19 +62,20 @@ if __name__ == "__main__":
     Xu = np.dot(X,u)
     Y = np.dot(Xu,u.T)
     print(f"Y = {Y}")
-    plot_function(Y[:,0], Y[:,1],"x-axis","y-axis","Y projection for u")
+    plot_function(Y[:,0], Y[:,1],"x-axis","y-axis","Y projection for u",0.95)
 
     # Z calculated
     Xz = np.dot(X,z)
     Z = np.dot(Xz,z.T)
     print(f"Z = {Z}")
-    plot_function(Z[:,0], Z[:,1],"x-axis","y-axis","Y projection for z")
+    plot_function(Z[:,0], Z[:,1],"x-axis","y-axis","Y projection for z", 0.95)
     plt.show()
 
     # PCA from sklearn
     pca = PCA(n_components=2)
     pca.fit(X)
-    train_pca = pca.transform(X)
-    print(train_pca)
-    plot_function(train_pca[:,0], train_pca[:,1],"x-axis","y-axis","PCA from scikit-learn")
+    # X_new = pca.inverse_transform(pca.transform(X))
+    X_new = pca.transform(X)
+    print(X_new.shape)
+    plot_function(X_new[:,0], X_new[:,1],"x-axis","y-axis","PCA from scikit-learn")
     plt.show()
