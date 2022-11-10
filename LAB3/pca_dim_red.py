@@ -55,9 +55,6 @@ if __name__ == "__main__":
     u = np.expand_dims(u,1)
     z = np.expand_dims(z,1)
 
-    # print(f"u = {u}")
-    # print(f"z = {z}")
-
     # Y calculated
     Xu = np.dot(X,u)
     Y = np.dot(Xu,u.T)
@@ -71,11 +68,26 @@ if __name__ == "__main__":
     plot_function(Z[:,0], Z[:,1],"x-axis","y-axis","Y projection for z", 0.95)
     plt.show()
 
+    # -----------------------------------------------------------
     # PCA from sklearn
     pca = PCA(n_components=2)
-    pca.fit(X)
-    # X_new = pca.inverse_transform(pca.transform(X))
-    X_new = pca.transform(X)
-    print(X_new.shape)
-    plot_function(X_new[:,0], X_new[:,1],"x-axis","y-axis","PCA from scikit-learn")
+    result = pca.fit(X)
+
+    Vectors = pca.components_
+
+    u = Vectors[:,0]
+    z = Vectors[:,1]
+    u = np.expand_dims(u,1)
+    z = np.expand_dims(z,1)
+
+    # Y calculated
+    Xu = np.dot(X,u)
+    Y = np.dot(Xu,u.T)
+    print(f"Y = {Y}")
+    plot_function(Y[:,0], Y[:,1],"x-axis","y-axis","Y projection for u",0.95)
+    # Z calculated
+    Xz = np.dot(X,z)
+    Z = np.dot(Xz,z.T)
+    print(f"Z = {Z}")
+    plot_function(Z[:,0], Z[:,1],"x-axis","y-axis","Y projection for z", 0.95)
     plt.show()
