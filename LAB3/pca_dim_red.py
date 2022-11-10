@@ -2,7 +2,7 @@
 from cProfile import label
 import numpy as np
 import matplotlib.pyplot as plt
-
+from sklearn.decomposition import PCA
 
 def plot_function(X, Y_train, x_label, y_label, label):
     plt.scatter(X, Y_train, label=label, s=15)
@@ -70,4 +70,12 @@ if __name__ == "__main__":
     Z = np.dot(Xz,z.T)
     print(f"Z = {Z}")
     plot_function(Z[:,0], Z[:,1],"x-axis","y-axis","Y projection for z")
+    plt.show()
+
+    # PCA from sklearn
+    pca = PCA(n_components=2)
+    pca.fit(X)
+    train_pca = pca.transform(X)
+    print(train_pca)
+    plot_function(train_pca[:,0], train_pca[:,1],"x-axis","y-axis","PCA from scikit-learn")
     plt.show()
