@@ -7,13 +7,13 @@
 
 ## Laboratory 2 todo list
 
-- [ ] Code
-- [ ] LaTeX description
+- [x] Code
+- [x] LaTeX description
 
 ## Laboratory 3 todo list
 
-- [ ] Code
-- [ ] LaTeX description
+- [x] Code
+- [x] LaTeX description
 
 ## Miniproject todo list
 
