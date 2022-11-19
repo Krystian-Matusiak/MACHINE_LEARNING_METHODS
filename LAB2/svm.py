@@ -149,7 +149,7 @@ if __name__ == "__main__":
             plt.show()
 
     x_gamma = ['scale', 'auto']
-    plt.plot(x_gamma,ACC)
+    plt.bar(x_gamma, ACC, width = 0.4)
     plt.xlabel("gamma")
     plt.ylabel("accuracy")
     plt.title("accuracy vs gamma")
@@ -184,7 +184,7 @@ if __name__ == "__main__":
             plt.show()
 
     x_kernels = ['linear', 'poly', 'rbf', 'sigmoid']
-    plt.plot(x_kernels, ACC)
+    plt.bar(x_kernels, ACC, width = 0.4)
     plt.xlabel("kernel")
     plt.ylabel("accuracy")
     plt.title("accuracy vs kernel")
