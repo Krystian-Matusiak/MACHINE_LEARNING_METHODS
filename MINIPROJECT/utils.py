@@ -4,7 +4,6 @@ try:
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
-    from sklearn.decomposition import PCA
     from tensorflow import keras
     from tensorflow.keras import layers, models
     from tensorflow.keras.preprocessing import image
@@ -41,6 +40,7 @@ def print_crosstab(X_test, Y_test, model):
 
     data = {'Exact_values': exact_vec, "Predictions": predict_vec}
     df = pd.DataFrame(data=data)
+    # print(df)
 
     results = pd.crosstab(df['Exact_values'],df['Predictions'])
     print(results)
