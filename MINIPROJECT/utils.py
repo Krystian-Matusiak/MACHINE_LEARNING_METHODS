@@ -14,6 +14,7 @@ try:
     from tensorflow.keras import optimizers, losses
     import tensorflow as tf
     from pathlib import Path
+    import seaborn as sb
     import os
 except:
     print("Something went wrong")
@@ -44,6 +45,9 @@ def print_crosstab(X_test, Y_test, model):
 
     results = pd.crosstab(df['Exact_values'],df['Predictions'])
     print(results)
+    plt.figure(figsize=(10,7))
+    sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
+    plt.show()
 
 # Import data from SEA_ANIMALS directory
 def import_dataset():
