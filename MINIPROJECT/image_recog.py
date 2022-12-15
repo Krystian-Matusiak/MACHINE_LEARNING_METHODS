@@ -4,7 +4,6 @@ try:
 except:
     print("Something went wrong")
 
-
 # ------------------------------------------------------------------------------------------------
 # Main block
 if __name__ == "__main__":
@@ -25,11 +24,7 @@ if __name__ == "__main__":
         use_transfer_learning = True,
         pretrained_model = "MobileNet"
     )
-
     CNN.addLayer(Flatten())
-    # CNN.addLayer(Dense(300, activation="relu"))
-    # CNN.addLayer(Dense(250, activation="relu"))
-    # CNN.addLayer(Dense(100, activation="relu"))
     CNN.addLayer(Dense(100, activation="relu"))
     CNN.addLayer(tf.keras.layers.Dropout(0.2))
     CNN.addOutputLayer()
@@ -42,11 +37,7 @@ if __name__ == "__main__":
 
     # ------------------------------------------------------------------------------------------------
     # Fit model
-
     if CNN.is_model_loaded == False:
-        print("Number of step per epoch = ",len(SeaAnimalsDataset.train_images))
-        print("Number of train images = ", len(SeaAnimalsDataset.train_labels))
-        print("Number of validate images = ", len(SeaAnimalsDataset.validation_labels))
         epochs = 5
 
         print(CNN.model.summary())

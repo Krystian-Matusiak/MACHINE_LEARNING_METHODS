@@ -34,6 +34,7 @@ class NNModel:
                         weights='imagenet',
                         pooling='avg'
                     )
+                    self.input_layer.trainable = False
                 elif pretrained_model == "ResNet":
                     self.input_layer = tf.keras.applications.ResNet50(
                         input_shape=(224, 224, 3),
@@ -41,6 +42,7 @@ class NNModel:
                         weights='imagenet',
                         pooling='avg'
                     )
+                    self.input_layer.trainable = False
                 else:
                     pass
 

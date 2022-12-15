@@ -12,30 +12,6 @@ except:
     print("Something went wrong")
 
 
-# Print Cross table
-def print_crosstab(X_test, Y_test, model):
-    labels = list(X_test.class_indices.keys())
-    preds = model.predict(X_test)
-    y_preds = tf.argmax(preds, 1).numpy()
-
-    exact_vec = []
-    for y in Y_test:
-        exact_vec.append(labels[y])
-    predict_vec = []
-    for y in y_preds:
-        predict_vec.append(labels[y])
-
-    data = {'Exact_values': exact_vec, "Predictions": predict_vec}
-    df = pd.DataFrame(data=data)
-    # print(df)
-
-    results = pd.crosstab(df['Exact_values'],df['Predictions'])
-    print(results)
-    plt.figure(figsize=(10,7))
-    sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
-    plt.show()
-
-
 class Dataset:
     """
     Generates dataset according to path. Contain informations like number of
@@ -50,7 +26,7 @@ class Dataset:
         self.dataset_path = dataset_path
         self.image_df = self.importDataset()
 
-        train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.4)
+        train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.3)
 
         self.train_images = train_datagen.flow_from_directory(
             self.dataset_path,
