@@ -1,17 +1,9 @@
 # Needed libraries
 try:
-    from cProfile import label
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
-    from tensorflow import keras
-    from tensorflow.keras import layers, models
-    from tensorflow.keras.preprocessing import image
     from tensorflow.keras.preprocessing.image import ImageDataGenerator
-    from tensorflow.keras.models import Sequential
-    from tensorflow.keras.layers import Conv2D, Flatten, MaxPooling2D, Dense, Dropout, GlobalAveragePooling2D
-    from sklearn.model_selection import train_test_split
-    from tensorflow.keras import optimizers, losses
     import tensorflow as tf
     from pathlib import Path
     import seaborn as sb
@@ -20,43 +12,60 @@ except:
     print("Something went wrong")
 
 
-# Show example image from cifar10
-def show_cifar_image():
-    (x_train, y_train), (x_test, y_test) = tf.keras.datasets.cifar10.load_data()
-    print(x_train.shape)
-    print(x_train[0, 0])
+class Dataset:
+    """
+    Generates dataset according to path. Contain informations like number of
+    labels, training images, validation images, vector of labels etc.
+    Args:
+        dataset_path: String. Path to images' directory, that is the place where
+            images will be fetched.
+        image_df: Float. Fraction of images reserved for validation (strictly 
+            between 0 and 1).
+    """
+    def __init__(self, dataset_path, validation_split):
+        self.dataset_path = dataset_path
+        self.image_df = self.importDataset()
 
-# Print Cross table
-def print_crosstab(X_test, Y_test, model):
-    labels = list(X_test.class_indices.keys())
-    preds = model.predict(X_test)
-    y_preds = tf.argmax(preds, 1).numpy()
+        train_datagen = ImageDataGenerator(rescale=1./255, validation_split=validation_split)
 
-    exact_vec = []
-    for y in Y_test:
-        exact_vec.append(labels[y])
-    predict_vec = []
-    for y in y_preds:
-        predict_vec.append(labels[y])
+        self.train_images = train_datagen.flow_from_directory(
+            self.dataset_path,
+            target_size=(224, 224),
+            batch_size=34,
+            shuffle=False,
+            class_mode='categorical',
+            subset='training')
+        self.train_labels = self.train_images.labels
 
-    data = {'Exact_values': exact_vec, "Predictions": predict_vec}
-    df = pd.DataFrame(data=data)
-    # print(df)
+        self.validation_images = train_datagen.flow_from_directory(
+            self.dataset_path,
+            target_size=(224, 224),
+            batch_size=34,
+            shuffle=False,
+            class_mode='categorical',
+            subset='validation')    
+        self.validation_labels = self.validation_images.labels
 
-    results = pd.crosstab(df['Exact_values'],df['Predictions'])
-    print(results)
-    plt.figure(figsize=(10,7))
-    sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
-    plt.show()
+        self.number_of_labels = len(self.train_images.class_indices.keys())
 
-# Import data from SEA_ANIMALS directory
-def import_dataset():
-    path = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
-    image_dir = Path(path)
-    filepaths = list(image_dir.glob(r'**/*.JPG')) + list(image_dir.glob(r'**/*.jpg')) + \
-        list(image_dir.glob(r'**/*.png')) + list(image_dir.glob(r'**/*.PNG'))
-    labels = list(map(lambda x: os.path.split(
-        os.path.split(x)[0])[1], filepaths))
-    filepaths = pd.Series(filepaths, name='Filepath').astype(str)
-    labels = pd.Series(labels, name='Label')
-    return pd.concat([filepaths, labels], axis=1)
+    def showExampleImages(self):
+        random_index = np.random.randint(0, len(self.image_df), 16)
+        fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(10, 10),
+                                subplot_kw={'xticks': [], 'yticks': []})
+
+        images_list = []
+        for i, ax in enumerate(axes.flat):
+            ax.imshow(plt.imread(self.image_df.Filepath[random_index[i]]))
+            ax.set_title(self.image_df.Label[random_index[i]])
+        plt.tight_layout()
+        plt.show()
+
+    def importDataset(self):
+        image_dir = Path(self.dataset_path)
+        filepaths = list(image_dir.glob(r'**/*.JPG')) + list(image_dir.glob(r'**/*.jpg')) + \
+            list(image_dir.glob(r'**/*.png')) + list(image_dir.glob(r'**/*.PNG'))
+        labels = list(map(lambda x: os.path.split(
+            os.path.split(x)[0])[1], filepaths))
+        filepaths = pd.Series(filepaths, name='Filepath').astype(str)
+        labels = pd.Series(labels, name='Label')
+        return pd.concat([filepaths, labels], axis=1)
