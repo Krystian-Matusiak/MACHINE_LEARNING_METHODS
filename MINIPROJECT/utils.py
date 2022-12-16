@@ -19,14 +19,14 @@ class Dataset:
     Args:
         dataset_path: String. Path to images' directory, that is the place where
             images will be fetched.
-        image_df: DataFrame. Pandas' dataframe with contains paths and labels for
-            particular images.
+        image_df: Float. Fraction of images reserved for validation (strictly 
+            between 0 and 1).
     """
-    def __init__(self, dataset_path):
+    def __init__(self, dataset_path, validation_split):
         self.dataset_path = dataset_path
         self.image_df = self.importDataset()
 
-        train_datagen = ImageDataGenerator(rescale=1./255, validation_split=0.3)
+        train_datagen = ImageDataGenerator(rescale=1./255, validation_split=validation_split)
 
         self.train_images = train_datagen.flow_from_directory(
             self.dataset_path,

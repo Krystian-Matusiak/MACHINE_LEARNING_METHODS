@@ -4,12 +4,11 @@ try:
 except:
     print("Something went wrong")
 
-# ------------------------------------------------------------------------------------------------
-# Main block
-if __name__ == "__main__":
-    model_path = 'model_overfitting.h'
+
+def Pipeline(TransferLearningNetworkName, no_epochs, validation_split):
+    model_path = 'model.h'
     dataset_path = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
-    SeaAnimalsDataset = Dataset(dataset_path=dataset_path)
+    SeaAnimalsDataset = Dataset(dataset_path=dataset_path, validation_split=validation_split)
 
     # ------------------------------------------------------------------------------------------------
     # Show example images from sea animals dataset
@@ -22,7 +21,7 @@ if __name__ == "__main__":
         number_of_labels=SeaAnimalsDataset.number_of_labels,
         model_path = None,
         use_transfer_learning = True,
-        pretrained_model = "MobileNet"
+        pretrained_model = TransferLearningNetworkName
     )
     CNN.addLayer(Flatten())
     CNN.addLayer(Dense(100, activation="relu"))
@@ -38,7 +37,7 @@ if __name__ == "__main__":
     # ------------------------------------------------------------------------------------------------
     # Fit model
     if CNN.is_model_loaded == False:
-        epochs = 5
+        epochs = no_epochs
 
         print(CNN.model.summary())
         CNN.trainModel(SeaAnimalsDataset.train_images,
@@ -54,3 +53,33 @@ if __name__ == "__main__":
 
     CNN.printCrosstab(SeaAnimalsDataset.validation_images, SeaAnimalsDataset.validation_labels)
     CNN.printCrosstab(SeaAnimalsDataset.train_images, SeaAnimalsDataset.train_labels)
+
+
+
+# ------------------------------------------------------------------------------------------------
+# Main block
+if __name__ == "__main__":
+
+    """
+    Test pretrained models for high number of epocks to see how the model behaves and
+    when they start to be overfitted.    
+    """
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=30, validation_split=0.3)
+    Pipeline(TransferLearningNetworkName="ResNet", no_epochs=30, validation_split=0.3)
+
+
+    """
+    Test better pretrained model for various value of validation split (validation images
+    to all images ratio) using constant (optimal) number of epochs.
+    """
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.1)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.2)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.3)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.4)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.7)
+   
+
+    """
+    Another test... 
+    """
+    # Pipeline(TransferLearningNetworkName="", no_epochs=, validation_split=)
