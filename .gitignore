@@ -131,3 +131,4 @@ dmypy.json
 
 model.h
 model_overfitting.h
+animalsModel.pth
