@@ -62,3 +62,5 @@ urllib3==1.26.12
 Werkzeug==2.2.2
 wrapt==1.14.1
 zipp==3.8.1
+torch==1.13.0
+torchvision==0.14.0
