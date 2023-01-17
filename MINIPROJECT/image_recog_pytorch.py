@@ -6,11 +6,15 @@ from torch import nn
 from torch import optim
 import torch.nn.functional as F
 from torchvision import datasets, transforms, models
+import os
+from torch.utils.data.sampler import SubsetRandomSampler
 
-trainEnable = 0
+trainEnable = 1
 
 #region -----load data
 data_dir = 'D:\\studia\\II_stopien\\2sem\\ML_L\\repo\\MACHINE_LEARNING_METHODS\\MINIPROJECT\\SEA_ANIMALS'
+dataset_path = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
+# data_dir = dataset_path
 def load_split_train_test(datadir, valid_size = .2):
     train_transforms = transforms.Compose([transforms.Resize([224, 224]),
                                        transforms.ToTensor(),
@@ -26,7 +30,6 @@ def load_split_train_test(datadir, valid_size = .2):
     indices = list(range(num_train))
     split = int(np.floor(valid_size * num_train))
     np.random.shuffle(indices)
-    from torch.utils.data.sampler import SubsetRandomSampler
     train_idx, test_idx = indices[split:], indices[:split]
     train_sampler = SubsetRandomSampler(train_idx)
     test_sampler = SubsetRandomSampler(test_idx)
@@ -51,10 +54,10 @@ model = models.resnet50(pretrained=True)
 for param in model.parameters():
     param.requires_grad = False
     
-model.fc = nn.Sequential(nn.Linear(2048, 500),
+model.fc = nn.Sequential(nn.Linear(2048, 100),
                                  nn.ReLU(),
                                  nn.Dropout(0.2),
-                                 nn.Linear(500, 7),
+                                 nn.Linear(100, 7),
                                  nn.LogSoftmax(dim=1))
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
@@ -154,7 +157,7 @@ def get_random_images(num):
 
 #region -----test
 to_pil = transforms.ToPILImage()
-images, labels = get_random_images(10)
+images, labels = get_random_images(34)
 fig=plt.figure(figsize=(10,10))
 for ii in range(len(images)):
     image = to_pil(images[ii])
