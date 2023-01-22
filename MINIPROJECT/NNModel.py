@@ -127,7 +127,7 @@ class NNModel:
 
         data = {'Exact_values': exact_vec, "Predictions": predict_vec}
         df = pd.DataFrame(data=data)
-        # print(df)
+        print(df)
 
         results = pd.crosstab(df['Exact_values'],df['Predictions'])
         print(results)

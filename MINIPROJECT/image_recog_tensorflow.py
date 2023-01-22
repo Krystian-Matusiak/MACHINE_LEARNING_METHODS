@@ -1,14 +1,29 @@
 # Needed libraries
 try:
     from NNModel import *
+    from enum import Enum
 except:
     print("Something went wrong")
 
 
 def Pipeline_TensorF(no_epochs = 10, validation_split = 0.2, learning_rate = 0.003, batch_size = 34, TransferLearningNetworkName="ResNet"):
-    model_path = 'TensorflowModel.pth'
-    dataset_path = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
+    class Env(Enum):
+        LINUX = 1
+        WINDOWS = 2
+        GOOGLE_COLAB = 3
+
+    env = Env.LINUX
+
+    if env == Env.LINUX:
+        data_dir = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
+    elif env == Env.WINDOWS:
+        data_dir = 'D:\\studia\\II_stopien\\2sem\\ML_L\\repo\\MACHINE_LEARNING_METHODS\\MINIPROJECT\\SEA_ANIMALS'
+    elif env == Env.GOOGLE_COLAB:
+        data_dir = "./SEA_ANIMALS/SEA_ANIMALS"
+    
+    dataset_path = data_dir
     SeaAnimalsDataset = Dataset(dataset_path=dataset_path, validation_split=validation_split, batch_size=batch_size)
+    model_path = 'ModelTensorflow.pth'
 
     # ------------------------------------------------------------------------------------------------
     # Show example images from sea animals dataset

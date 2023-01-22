@@ -37,7 +37,7 @@ def load_split_train_test(datadir, batch_size, valid_size=0.2):
                                              sampler=test_sampler, batch_size=batch_size)
     return trainloader, testloader
 
-def predict_image(image, transforms, model):
+def predict_image(image, transforms, model, device):
     image_tensor = transforms(image).float()
     image_tensor = image_tensor.unsqueeze_(0)
     input_image = image_tensor
@@ -61,7 +61,7 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
     # region ---------------------------------------------- Load data
     is_model_loaded = False
     data_dir =[]
-    model_name = 'PytorchModel.pth'
+    model_path = 'ModelPytorch.pth'
 
     class Env(Enum):
         LINUX = 1
@@ -106,16 +106,20 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
     #region ---------------------------------------------- Training
     if is_model_loaded:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = torch.load(model_name)
+        model = torch.load(model_path)
     else:
         epochs = no_epochs
         train_losses, test_losses = [], []
+        train_acc, test_acc = [], []        
 
         for epoch in range(epochs):
             print(f"Epoch {epoch+1}/{epochs}.. ")
             iteration = 0
-            accuracy = 0
-            running_loss = 0
+            
+            train_accuracy = 0
+            test_accuracy = 0
+
+            train_loss = 0
             test_loss = 0
 
             for inputs, labels in trainloader:
@@ -126,7 +130,12 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
                 loss = criterion(predicts, labels)
                 loss.backward()
                 optimizer.step()
-                running_loss += loss.item()
+                train_loss += loss.item()
+                ps = torch.exp(predicts)
+                top_p, top_class = ps.topk(1, dim=1)
+                equals = top_class == labels.view(*top_class.shape)
+                train_accuracy += torch.mean(
+                    equals.type(torch.FloatTensor)).item()
 
             model.eval()
             with torch.no_grad():
@@ -141,20 +150,34 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
                     ps = torch.exp(predicts)
                     top_p, top_class = ps.topk(1, dim=1)
                     equals = top_class == labels.view(*top_class.shape)
-                    accuracy += torch.mean(
+                    test_accuracy += torch.mean(
                         equals.type(torch.FloatTensor)).item()
             model.train()
 
-            train_losses.append(running_loss/len(trainloader))
+            train_losses.append(train_loss/len(trainloader))
             test_losses.append(test_loss/len(testloader))
-            print(f"Train loss: {running_loss/len(trainloader):.4f}.. "
-                  f"Test loss: {test_loss/len(testloader):.4f}.. "
-                  f"Test accuracy: {accuracy/len(testloader):.4f}")
 
-        torch.save(model, model_name)
+            train_acc.append(train_accuracy/len(trainloader))
+            test_acc.append(test_accuracy/len(testloader))
+            print(f"Train loss: {train_loss/len(trainloader):.4f}.. "
+                  f"Test loss: {test_loss/len(testloader):.4f}.. "
+                  f"Train accuracy: {train_accuracy/len(trainloader):.4f}.. "
+                  f"Test accuracy: {test_accuracy/len(testloader):.4f}")
+
+        torch.save(model, model_path)
+
+        plt.figure()
         plt.plot(train_losses, label='Training loss')
         plt.plot(test_losses, label='Validation loss')
         plt.legend(frameon=False)
+        plt.grid()
+        plt.show()
+
+        plt.figure()
+        plt.plot(train_acc, label='Training accuracy')
+        plt.plot(test_acc, label='Validation accuracy')
+        plt.legend(frameon=False)
+        plt.grid()
         plt.show()
     # endregion
 
@@ -171,7 +194,7 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
     fig = plt.figure(figsize=(10, 10))
     for ii in range(9):
         image = to_pil(images[ii])
-        index = predict_image(image, test_transforms, model)
+        index = predict_image(image, test_transforms, model, device)
         sub = fig.add_subplot(4, 3, ii+1)
         res = int(labels[ii]) == index
         sub.set_title(str(classes[index]))
@@ -197,6 +220,7 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
 
     data = {'Exact_values': labels_vec, "Predictions": predicts_vec}
     df = pd.DataFrame(data=data)
+    print(df)
 
     results = pd.crosstab(df['Exact_values'],df['Predictions'])
     plt.figure(figsize=(10,7))
