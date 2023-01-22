@@ -72,7 +72,7 @@ class NNModel:
 
     def compileModel(self, loss, optimizer, metrics):
         if self.is_model_loaded:
-            print("Cannot compile - model has been loaded from specific path.")
+            print("Cannot compile - model has been loaded from particular path.")
         else:
             self.model.compile(loss=loss, optimizer=optimizer, metrics=metrics)
 
@@ -95,21 +95,23 @@ class NNModel:
             )
 
     def plotHistory(self):
+        plt.figure()
         plt.plot(self.history.history['accuracy'])
         plt.plot(self.history.history['val_accuracy'])
         plt.title('model accuracy')
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train','validate'], loc='upper left')
-        plt.show()
+        # plt.show()
 
+        plt.figure()
         plt.plot(self.history.history['loss'])
         plt.plot(self.history.history['val_loss'])
         plt.title('model loss')
         plt.ylabel('loss')
         plt.xlabel('epoch')
         plt.legend(['train','validate'], loc='upper left')
-        plt.show()
+        # plt.show()
 
     def printCrosstab(self, X_test, Y_test):
         labels = list(X_test.class_indices.keys())
@@ -131,4 +133,4 @@ class NNModel:
         print(results)
         plt.figure(figsize=(10,7))
         sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
-        plt.show()
+        # plt.show()

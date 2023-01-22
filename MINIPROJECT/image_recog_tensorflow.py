@@ -5,8 +5,8 @@ except:
     print("Something went wrong")
 
 
-def Pipeline(TransferLearningNetworkName, no_epochs, validation_split):
-    model_path = 'model.h'
+def Pipeline(TransferLearningNetworkName, no_epochs, validation_split, learning_rate = 0.003):
+    model_path = 'TensorflowModel.pth'
     dataset_path = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
     SeaAnimalsDataset = Dataset(dataset_path=dataset_path, validation_split=validation_split)
 
@@ -30,7 +30,7 @@ def Pipeline(TransferLearningNetworkName, no_epochs, validation_split):
 
     CNN.compileModel(
         loss=tf.keras.losses.CategoricalCrossentropy(),
-        optimizer=tf.keras.optimizers.Adam(), 
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate), 
         metrics=['accuracy']
     )
 
@@ -53,7 +53,7 @@ def Pipeline(TransferLearningNetworkName, no_epochs, validation_split):
 
     CNN.printCrosstab(SeaAnimalsDataset.validation_images, SeaAnimalsDataset.validation_labels)
     CNN.printCrosstab(SeaAnimalsDataset.train_images, SeaAnimalsDataset.train_labels)
-
+    plt.show()
 
 
 # ------------------------------------------------------------------------------------------------
@@ -64,19 +64,19 @@ if __name__ == "__main__":
     Test pretrained models for high number of epocks to see how the model behaves and
     when they start to be overfitted.    
     """
-    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=30, validation_split=0.3)
-    Pipeline(TransferLearningNetworkName="ResNet", no_epochs=30, validation_split=0.3)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=7, validation_split=0.3, learning_rate=0.003)
+    Pipeline(TransferLearningNetworkName="ResNet", no_epochs=30, validation_split=0.3, learning_rate=0.003)
 
 
     """
     Test better pretrained model for various value of validation split (validation images
     to all images ratio) using constant (optimal) number of epochs.
     """
-    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.1)
-    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.2)
-    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.3)
-    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.4)
-    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.7)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.1, learning_rate=0.003)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.2, learning_rate=0.003)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.3, learning_rate=0.003)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.4, learning_rate=0.003)
+    Pipeline(TransferLearningNetworkName="MobileNet", no_epochs=10, validation_split=0.7, learning_rate=0.003)
    
 
     """
