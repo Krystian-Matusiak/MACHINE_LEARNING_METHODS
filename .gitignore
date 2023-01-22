@@ -131,4 +131,5 @@ dmypy.json
 
 model.h
 model_overfitting.h
-animalsModel.pth
+PytorchAModel.pth
+TensorflowModel.pth
