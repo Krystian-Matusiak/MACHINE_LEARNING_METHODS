@@ -9,6 +9,8 @@ from torchvision import datasets, transforms, models
 import os
 from torch.utils.data.sampler import SubsetRandomSampler
 from enum import Enum
+import seaborn as sb
+import pandas as pd
 
 
 def load_split_train_test(datadir, batch_size, valid_size=0.2):
@@ -121,8 +123,8 @@ if __name__ == "__main__":
                 iteration += 1
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
-                pregicts = model(inputs)
-                loss = criterion(pregicts, labels)
+                predicts = model(inputs)
+                loss = criterion(predicts, labels)
                 loss.backward()
                 optimizer.step()
                 running_loss += loss.item()
@@ -133,11 +135,11 @@ if __name__ == "__main__":
                     inputs, labels = inputs.to(
                         device), labels.to(device)
 
-                    pregicts = model(inputs)
-                    batch_loss = criterion(pregicts, labels)
+                    predicts = model(inputs)
+                    batch_loss = criterion(predicts, labels)
                     test_loss += batch_loss.item()
 
-                    ps = torch.exp(pregicts)
+                    ps = torch.exp(predicts)
                     top_p, top_class = ps.topk(1, dim=1)
                     equals = top_class == labels.view(*top_class.shape)
                     accuracy += torch.mean(
@@ -157,19 +159,14 @@ if __name__ == "__main__":
         plt.show()
     # endregion
 
-    #region ---------------------------------------------- Evaluation
+    #region ---------------------------------------------- Testing model
     model.eval()
-    # endregion
-
-    #region ----------------------------------------------prediction
     test_transforms = transforms.Compose([transforms.Resize([224, 224]),
                                           transforms.ToTensor(),
                                           ])
     data = datasets.ImageFolder(data_dir, transform=test_transforms)
     classes = data.classes
-    # endregion
 
-    #region ---------------------------------------------- Test
     to_pil = transforms.ToPILImage()
     images, labels = get_random_images(BATCH_SIZE, data)
     fig = plt.figure(figsize=(10, 10))
@@ -182,4 +179,27 @@ if __name__ == "__main__":
         plt.axis('off')
         plt.imshow(image, )
     plt.show()
+    # endregion
+
+    #region ---------------------------------------------- Crosstab
+    predicts_vec = np.array([])
+    labels_vec = np.array([])
+    for inputs, labels in testloader:
+        inputs, labels = inputs.to(
+            device), labels.to(device)
+
+        predicts = model(inputs)
+        predicts = predicts.max(1).indices
+
+        labels = labels.data.cpu().numpy()
+        predicts = predicts.data.cpu().numpy()
+        predicts_vec = np.append(predicts_vec,predicts)
+        labels_vec = np.append(labels_vec,labels)
+
+    data = {'Exact_values': labels_vec, "Predictions": predicts_vec}
+    df = pd.DataFrame(data=data)
+
+    results = pd.crosstab(df['Exact_values'],df['Predictions'])
+    plt.figure(figsize=(10,7))
+    sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
     # endregion
