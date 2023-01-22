@@ -57,11 +57,10 @@ def get_random_images(num, data):
     images, labels = next(dataiter)
     return images, labels
 
-if __name__ == "__main__":
+def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.003, batch_size = 34):
     # region ---------------------------------------------- Load data
-    is_linux = True
     is_model_loaded = False
-    data_dir = []
+    data_dir =[]
     model_name = 'PytorchModel.pth'
 
     class Env(Enum):
@@ -78,8 +77,7 @@ if __name__ == "__main__":
     elif env == Env.GOOGLE_COLAB:
         data_dir = "./SEA_ANIMALS/SEA_ANIMALS"
 
-    BATCH_SIZE = 34
-    trainloader, testloader = load_split_train_test(data_dir, batch_size=BATCH_SIZE, valid_size=0.2)
+    trainloader, testloader = load_split_train_test(data_dir, batch_size=batch_size, valid_size=validation_split)
     print(f"All classes: {trainloader.dataset.classes}")
     print(f"Number of batches for train data: {len(trainloader)}")
     print(f"Number of batches for test data: {len(testloader)}")
@@ -90,6 +88,7 @@ if __name__ == "__main__":
                           else "cpu")
     print(device)
     model = models.resnet50(pretrained=True)
+    # model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
 
     for param in model.parameters():
         param.requires_grad = False
@@ -100,7 +99,7 @@ if __name__ == "__main__":
                              nn.Linear(100, 7),
                              nn.LogSoftmax(dim=1))
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
+    optimizer = optim.Adam(model.fc.parameters(), lr=learning_rate)
     model.to(device)
     # endregion
 
@@ -109,7 +108,7 @@ if __name__ == "__main__":
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         model = torch.load(model_name)
     else:
-        epochs = 10
+        epochs = no_epochs
         train_losses, test_losses = [], []
 
         for epoch in range(epochs):
@@ -168,7 +167,7 @@ if __name__ == "__main__":
     classes = data.classes
 
     to_pil = transforms.ToPILImage()
-    images, labels = get_random_images(BATCH_SIZE, data)
+    images, labels = get_random_images(batch_size, data)
     fig = plt.figure(figsize=(10, 10))
     for ii in range(9):
         image = to_pil(images[ii])
@@ -202,4 +201,8 @@ if __name__ == "__main__":
     results = pd.crosstab(df['Exact_values'],df['Predictions'])
     plt.figure(figsize=(10,7))
     sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
-    # endregion
+    # endregion 
+
+
+if __name__ == "__main__":
+    Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.003, batch_size = 34)
