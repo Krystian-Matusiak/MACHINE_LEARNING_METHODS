@@ -37,7 +37,7 @@ def load_split_train_test(datadir, batch_size, valid_size=0.2):
                                              sampler=test_sampler, batch_size=batch_size)
     return trainloader, testloader
 
-def predict_image(image, transforms, model):
+def predict_image(image, transforms, model, device):
     image_tensor = transforms(image).float()
     image_tensor = image_tensor.unsqueeze_(0)
     input_image = image_tensor
@@ -57,12 +57,11 @@ def get_random_images(num, data):
     images, labels = next(dataiter)
     return images, labels
 
-if __name__ == "__main__":
+def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.003, batch_size = 34):
     # region ---------------------------------------------- Load data
-    is_linux = True
     is_model_loaded = False
-    data_dir = []
-    model_name = 'PytorchModel.pth'
+    data_dir =[]
+    model_path = 'ModelPytorch.pth'
 
     class Env(Enum):
         LINUX = 1
@@ -78,8 +77,7 @@ if __name__ == "__main__":
     elif env == Env.GOOGLE_COLAB:
         data_dir = "./SEA_ANIMALS/SEA_ANIMALS"
 
-    BATCH_SIZE = 34
-    trainloader, testloader = load_split_train_test(data_dir, batch_size=BATCH_SIZE, valid_size=0.2)
+    trainloader, testloader = load_split_train_test(data_dir, batch_size=batch_size, valid_size=validation_split)
     print(f"All classes: {trainloader.dataset.classes}")
     print(f"Number of batches for train data: {len(trainloader)}")
     print(f"Number of batches for test data: {len(testloader)}")
@@ -90,6 +88,7 @@ if __name__ == "__main__":
                           else "cpu")
     print(device)
     model = models.resnet50(pretrained=True)
+    # model = torch.hub.load('pytorch/vision:v0.10.0', 'mobilenet_v2', pretrained=True)
 
     for param in model.parameters():
         param.requires_grad = False
@@ -100,23 +99,27 @@ if __name__ == "__main__":
                              nn.Linear(100, 7),
                              nn.LogSoftmax(dim=1))
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
+    optimizer = optim.Adam(model.fc.parameters(), lr=learning_rate)
     model.to(device)
     # endregion
 
     #region ---------------------------------------------- Training
     if is_model_loaded:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model = torch.load(model_name)
+        model = torch.load(model_path)
     else:
-        epochs = 10
+        epochs = no_epochs
         train_losses, test_losses = [], []
+        train_acc, test_acc = [], []        
 
         for epoch in range(epochs):
             print(f"Epoch {epoch+1}/{epochs}.. ")
             iteration = 0
-            accuracy = 0
-            running_loss = 0
+            
+            train_accuracy = 0
+            test_accuracy = 0
+
+            train_loss = 0
             test_loss = 0
 
             for inputs, labels in trainloader:
@@ -127,7 +130,12 @@ if __name__ == "__main__":
                 loss = criterion(predicts, labels)
                 loss.backward()
                 optimizer.step()
-                running_loss += loss.item()
+                train_loss += loss.item()
+                ps = torch.exp(predicts)
+                top_p, top_class = ps.topk(1, dim=1)
+                equals = top_class == labels.view(*top_class.shape)
+                train_accuracy += torch.mean(
+                    equals.type(torch.FloatTensor)).item()
 
             model.eval()
             with torch.no_grad():
@@ -142,20 +150,34 @@ if __name__ == "__main__":
                     ps = torch.exp(predicts)
                     top_p, top_class = ps.topk(1, dim=1)
                     equals = top_class == labels.view(*top_class.shape)
-                    accuracy += torch.mean(
+                    test_accuracy += torch.mean(
                         equals.type(torch.FloatTensor)).item()
             model.train()
 
-            train_losses.append(running_loss/len(trainloader))
+            train_losses.append(train_loss/len(trainloader))
             test_losses.append(test_loss/len(testloader))
-            print(f"Train loss: {running_loss/len(trainloader):.4f}.. "
-                  f"Test loss: {test_loss/len(testloader):.4f}.. "
-                  f"Test accuracy: {accuracy/len(testloader):.4f}")
 
-        torch.save(model, model_name)
+            train_acc.append(train_accuracy/len(trainloader))
+            test_acc.append(test_accuracy/len(testloader))
+            print(f"Train loss: {train_loss/len(trainloader):.4f}.. "
+                  f"Test loss: {test_loss/len(testloader):.4f}.. "
+                  f"Train accuracy: {train_accuracy/len(trainloader):.4f}.. "
+                  f"Test accuracy: {test_accuracy/len(testloader):.4f}")
+
+        torch.save(model, model_path)
+
+        plt.figure()
         plt.plot(train_losses, label='Training loss')
         plt.plot(test_losses, label='Validation loss')
         plt.legend(frameon=False)
+        plt.grid()
+        plt.show()
+
+        plt.figure()
+        plt.plot(train_acc, label='Training accuracy')
+        plt.plot(test_acc, label='Validation accuracy')
+        plt.legend(frameon=False)
+        plt.grid()
         plt.show()
     # endregion
 
@@ -168,11 +190,11 @@ if __name__ == "__main__":
     classes = data.classes
 
     to_pil = transforms.ToPILImage()
-    images, labels = get_random_images(BATCH_SIZE, data)
+    images, labels = get_random_images(batch_size, data)
     fig = plt.figure(figsize=(10, 10))
     for ii in range(9):
         image = to_pil(images[ii])
-        index = predict_image(image, test_transforms, model)
+        index = predict_image(image, test_transforms, model, device)
         sub = fig.add_subplot(4, 3, ii+1)
         res = int(labels[ii]) == index
         sub.set_title(str(classes[index]))
@@ -196,10 +218,25 @@ if __name__ == "__main__":
         predicts_vec = np.append(predicts_vec,predicts)
         labels_vec = np.append(labels_vec,labels)
 
-    data = {'Exact_values': labels_vec, "Predictions": predicts_vec}
+    label_names = trainloader.dataset.classes    
+    exact_vec = []
+    for y in labels_vec:
+        exact_vec.append(label_names[int(y)])
+    predict_vec = []
+    for y in predicts_vec:
+        predict_vec.append(label_names[int(y)])
+
+    data = {'Exact_values': exact_vec, "Predictions": predict_vec}
     df = pd.DataFrame(data=data)
+    print(df)
 
     results = pd.crosstab(df['Exact_values'],df['Predictions'])
     plt.figure(figsize=(10,7))
     sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
-    # endregion
+    plt.title("Crosstab for pytorch")
+    plt.show()
+    # endregion 
+
+
+if __name__ == "__main__":
+    Pipeline_PyTorch(no_epochs = 1, validation_split = 0.9, learning_rate = 0.003, batch_size = 34)

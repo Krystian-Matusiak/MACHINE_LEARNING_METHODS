@@ -22,7 +22,7 @@ class Dataset:
         image_df: Float. Fraction of images reserved for validation (strictly 
             between 0 and 1).
     """
-    def __init__(self, dataset_path, validation_split):
+    def __init__(self, dataset_path, validation_split, batch_size):
         self.dataset_path = dataset_path
         self.image_df = self.importDataset()
 
@@ -31,7 +31,7 @@ class Dataset:
         self.train_images = train_datagen.flow_from_directory(
             self.dataset_path,
             target_size=(224, 224),
-            batch_size=34,
+            batch_size=batch_size,
             shuffle=False,
             class_mode='categorical',
             subset='training')
@@ -40,7 +40,7 @@ class Dataset:
         self.validation_images = train_datagen.flow_from_directory(
             self.dataset_path,
             target_size=(224, 224),
-            batch_size=34,
+            batch_size=batch_size,
             shuffle=False,
             class_mode='categorical',
             subset='validation')    
