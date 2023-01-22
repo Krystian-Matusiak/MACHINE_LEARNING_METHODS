@@ -218,15 +218,25 @@ def Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
         predicts_vec = np.append(predicts_vec,predicts)
         labels_vec = np.append(labels_vec,labels)
 
-    data = {'Exact_values': labels_vec, "Predictions": predicts_vec}
+    label_names = trainloader.dataset.classes    
+    exact_vec = []
+    for y in labels_vec:
+        exact_vec.append(label_names[int(y)])
+    predict_vec = []
+    for y in predicts_vec:
+        predict_vec.append(label_names[int(y)])
+
+    data = {'Exact_values': exact_vec, "Predictions": predict_vec}
     df = pd.DataFrame(data=data)
     print(df)
 
     results = pd.crosstab(df['Exact_values'],df['Predictions'])
     plt.figure(figsize=(10,7))
     sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
+    plt.title("Crosstab for pytorch")
+    plt.show()
     # endregion 
 
 
 if __name__ == "__main__":
-    Pipeline_PyTorch(no_epochs = 10, validation_split = 0.2, learning_rate = 0.003, batch_size = 34)
+    Pipeline_PyTorch(no_epochs = 1, validation_split = 0.9, learning_rate = 0.003, batch_size = 34)

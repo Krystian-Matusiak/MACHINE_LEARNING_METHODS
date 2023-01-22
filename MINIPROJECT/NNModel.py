@@ -133,4 +133,5 @@ class NNModel:
         print(results)
         plt.figure(figsize=(10,7))
         sb.heatmap(results, annot=True, cmap="OrRd", fmt=".0f")
+        plt.title("Crosstab for tensorflow")
         # plt.show()
