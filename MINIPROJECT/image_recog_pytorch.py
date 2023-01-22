@@ -8,12 +8,10 @@ import torch.nn.functional as F
 from torchvision import datasets, transforms, models
 import os
 from torch.utils.data.sampler import SubsetRandomSampler
-
-trainEnable = 1
-batch_size = 34
+from enum import Enum
 
 
-def load_split_train_test(datadir, valid_size=.2):
+def load_split_train_test(datadir, batch_size, valid_size=0.2):
     train_transforms = transforms.Compose([transforms.Resize([224, 224]),
                                            transforms.ToTensor(),
                                            ])
@@ -37,25 +35,58 @@ def load_split_train_test(datadir, valid_size=.2):
                                              sampler=test_sampler, batch_size=batch_size)
     return trainloader, testloader
 
+def predict_image(image, transforms, model):
+    image_tensor = transforms(image).float()
+    image_tensor = image_tensor.unsqueeze_(0)
+    input_image = image_tensor
+    input_image = input_image.to(device)
+    output = model(input_image)
+    index = output.data.cpu().numpy().argmax()
+    return index
+
+def get_random_images(num, data):
+    indices = list(range(len(data)))
+    np.random.shuffle(indices)
+    idx = indices[:num]
+    sampler = SubsetRandomSampler(idx)
+    loader = torch.utils.data.DataLoader(data,
+                                            sampler=sampler, batch_size=num)
+    dataiter = iter(loader)
+    images, labels = next(dataiter)
+    return images, labels
 
 if __name__ == "__main__":
-    # region ----------------------------------------------load data
+    # region ---------------------------------------------- Load data
     is_linux = True
     is_model_loaded = False
     data_dir = []
-    model_name = 'PytorchAModel.pth'
-    if is_linux:
-        data_dir = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
-    else:
-        data_dir = 'D:\\studia\\II_stopien\\2sem\\ML_L\\repo\\MACHINE_LEARNING_METHODS\\MINIPROJECT\\SEA_ANIMALS'
+    model_name = 'PytorchModel.pth'
 
-    trainloader, testloader = load_split_train_test(data_dir, .2)
-    print(trainloader.dataset.classes)
+    class Env(Enum):
+        LINUX = 1
+        WINDOWS = 2
+        GOOGLE_COLAB = 3
+
+    env = Env.LINUX
+
+    if env == Env.LINUX:
+        data_dir = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
+    elif env == Env.WINDOWS:
+        data_dir = 'D:\\studia\\II_stopien\\2sem\\ML_L\\repo\\MACHINE_LEARNING_METHODS\\MINIPROJECT\\SEA_ANIMALS'
+    elif env == Env.GOOGLE_COLAB:
+        data_dir = "./SEA_ANIMALS/SEA_ANIMALS"
+
+    BATCH_SIZE = 34
+    trainloader, testloader = load_split_train_test(data_dir, batch_size=BATCH_SIZE, valid_size=0.2)
+    print(f"All classes: {trainloader.dataset.classes}")
+    print(f"Number of batches for train data: {len(trainloader)}")
+    print(f"Number of batches for test data: {len(testloader)}")
     # endregion
 
     # region ---------------------------------------------- Creating model
     device = torch.device("cuda" if torch.cuda.is_available()
                           else "cpu")
+    print(device)
     model = models.resnet50(pretrained=True)
 
     for param in model.parameters():
@@ -88,7 +119,6 @@ if __name__ == "__main__":
 
             for inputs, labels in trainloader:
                 iteration += 1
-                print(f"Iteration {iteration}")
                 inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
                 pregicts = model(inputs)
@@ -127,7 +157,7 @@ if __name__ == "__main__":
         plt.show()
     # endregion
 
-    #region ----------------------------------------------evaluation
+    #region ---------------------------------------------- Evaluation
     model.eval()
     # endregion
 
@@ -135,41 +165,17 @@ if __name__ == "__main__":
     test_transforms = transforms.Compose([transforms.Resize([224, 224]),
                                           transforms.ToTensor(),
                                           ])
-
-    def predict_image(image):
-        image_tensor = test_transforms(image).float()
-        image_tensor = image_tensor.unsqueeze_(0)
-        input = image_tensor
-        input = input.to(device)
-        output = model(input)
-        index = output.data.cpu().numpy().argmax()
-        return index
-    # endregion
-
-    # region ----------------------------------------------random images
     data = datasets.ImageFolder(data_dir, transform=test_transforms)
     classes = data.classes
-
-    def get_random_images(num):
-        indices = list(range(len(data)))
-        np.random.shuffle(indices)
-        idx = indices[:num]
-        sampler = SubsetRandomSampler(idx)
-        loader = torch.utils.data.DataLoader(data,
-                                             sampler=sampler, batch_size=num)
-        dataiter = iter(loader)
-        images, labels = next(dataiter)
-        return images, labels
     # endregion
 
-    #region ----------------------------------------------test
+    #region ---------------------------------------------- Test
     to_pil = transforms.ToPILImage()
-    images, labels = get_random_images(34)
+    images, labels = get_random_images(BATCH_SIZE, data)
     fig = plt.figure(figsize=(10, 10))
-    for ii in range(len(images)):
+    for ii in range(9):
         image = to_pil(images[ii])
-        index = predict_image(image)
-        print(index)
+        index = predict_image(image, test_transforms, model)
         sub = fig.add_subplot(4, 3, ii+1)
         res = int(labels[ii]) == index
         sub.set_title(str(classes[index]))
