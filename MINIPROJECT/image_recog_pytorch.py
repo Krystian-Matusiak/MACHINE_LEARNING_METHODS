@@ -41,6 +41,7 @@ def load_split_train_test(datadir, valid_size=.2):
 if __name__ == "__main__":
     # region ----------------------------------------------load data
     is_linux = True
+    is_model_loaded = False
     data_dir = []
     model_name = 'PytorchAModel.pth'
     if is_linux:
@@ -61,66 +62,65 @@ if __name__ == "__main__":
         param.requires_grad = False
 
     model.fc = nn.Sequential(nn.Linear(2048, 100),
-                                nn.ReLU(),
-                                nn.Dropout(0.2),
-                                nn.Linear(100, 7),
-                                nn.LogSoftmax(dim=1))
-    criterion = nn.NLLLoss()
+                             nn.ReLU(),
+                             nn.Dropout(0.2),
+                             nn.Linear(100, 7),
+                             nn.LogSoftmax(dim=1))
+    criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
     model.to(device)
     # endregion
 
-    #region ----------------------------------------------train
-    if trainEnable:
+    #region ---------------------------------------------- Training
+    if is_model_loaded:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = torch.load(model_name)
+    else:
         epochs = 10
-        steps = 0
-        running_loss = 0
-        print_every = 10
         train_losses, test_losses = [], []
 
         for epoch in range(epochs):
-            for inputs, labels in trainloader:
-                steps += 1
-                inputs, labels = inputs.to(device), labels.to(device)
+            print(f"Epoch {epoch+1}/{epochs}.. ")
+            iteration = 0
+            accuracy = 0
+            running_loss = 0
+            test_loss = 0
 
+            for inputs, labels in trainloader:
+                iteration += 1
+                print(f"Iteration {iteration}")
+                inputs, labels = inputs.to(device), labels.to(device)
                 optimizer.zero_grad()
-                logps = model.forward(inputs)
-                loss = criterion(logps, labels)
+                pregicts = model(inputs)
+                loss = criterion(pregicts, labels)
                 loss.backward()
                 optimizer.step()
                 running_loss += loss.item()
 
-                test_loss = 0
-                accuracy = 0
-                model.eval()
-                with torch.no_grad():
-                    for inputs, labels in testloader:
-                        inputs, labels = inputs.to(
-                            device), labels.to(device)
+            model.eval()
+            with torch.no_grad():
+                for inputs, labels in testloader:
+                    inputs, labels = inputs.to(
+                        device), labels.to(device)
 
-                        logps = model.forward(inputs)
-                        batch_loss = criterion(logps, labels)
-                        test_loss += batch_loss.item()
+                    pregicts = model(inputs)
+                    batch_loss = criterion(pregicts, labels)
+                    test_loss += batch_loss.item()
 
-                        ps = torch.exp(logps)
-                        top_p, top_class = ps.topk(1, dim=1)
-                        equals = top_class == labels.view(*top_class.shape)
-                        accuracy += torch.mean(
-                            equals.type(torch.FloatTensor)).item()
+                    ps = torch.exp(pregicts)
+                    top_p, top_class = ps.topk(1, dim=1)
+                    equals = top_class == labels.view(*top_class.shape)
+                    accuracy += torch.mean(
+                        equals.type(torch.FloatTensor)).item()
+            model.train()
 
-                train_losses.append(running_loss/len(trainloader))
-                test_losses.append(test_loss/len(testloader))
-
-                print(f"Epoch {epoch+1}/{epochs}.. "
-                        f"Train loss: {running_loss/print_every:.3f}.. "
-                        f"Test loss: {test_loss/len(testloader):.3f}.. "
-                        f"Test accuracy: {accuracy/len(testloader):.3f}")
-
-                running_loss = 0
-                model.train()
+            train_losses.append(running_loss/len(trainloader))
+            test_losses.append(test_loss/len(testloader))
+            print(f"Train loss: {running_loss/len(trainloader):.4f}.. "
+                  f"Test loss: {test_loss/len(testloader):.4f}.. "
+                  f"Test accuracy: {accuracy/len(testloader):.4f}")
 
         torch.save(model, model_name)
-
         plt.plot(train_losses, label='Training loss')
         plt.plot(test_losses, label='Validation loss')
         plt.legend(frameon=False)
@@ -128,8 +128,6 @@ if __name__ == "__main__":
     # endregion
 
     #region ----------------------------------------------evaluation
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = torch.load(model_name)
     model.eval()
     # endregion
 
