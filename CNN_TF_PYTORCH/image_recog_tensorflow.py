@@ -15,9 +15,9 @@ def Pipeline_TensorF(no_epochs = 10, validation_split = 0.2, learning_rate = 0.0
     env = Env.LINUX
 
     if env == Env.LINUX:
-        data_dir = os.getcwd() + "/MINIPROJECT/SEA_ANIMALS"
+        data_dir = os.getcwd() + "/CNN_TF_PYTORCH/SEA_ANIMALS"
     elif env == Env.WINDOWS:
-        data_dir = 'D:\\studia\\II_stopien\\2sem\\ML_L\\repo\\MACHINE_LEARNING_METHODS\\MINIPROJECT\\SEA_ANIMALS'
+        data_dir = 'D:\\studia\\II_stopien\\2sem\\ML_L\\repo\\MACHINE_LEARNING_METHODS\\CNN_TF_PYTORCH\\SEA_ANIMALS'
     elif env == Env.GOOGLE_COLAB:
         data_dir = "./SEA_ANIMALS/SEA_ANIMALS"
     
