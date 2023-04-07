@@ -1,0 +1,1 @@
+docker run --user "$(id -u):$(id -g)" --network="host" --name PDIOW --rm -v $(pwd):/app pdiow-python python $1

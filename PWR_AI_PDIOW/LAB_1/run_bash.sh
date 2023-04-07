@@ -1,0 +1,1 @@
+docker run --user "$(id -u):$(id -g)" --network="host" --rm -v $(pwd):/app --entrypoint bash -it pdiow-python 
